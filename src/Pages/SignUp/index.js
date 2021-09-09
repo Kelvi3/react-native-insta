@@ -4,6 +4,7 @@ import { StyleSheet, Text, View, TextInput, Pressable  } from "react-native";
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import { useDispatch } from "react-redux";
 import { logIn } from "../../redux";
+import { useSelector } from "react-redux";
 
 const SignUp = ({navigation}) => {
 
@@ -12,11 +13,13 @@ const SignUp = ({navigation}) => {
   const [password, setPassword] = useState('');
   const [hidePass, setHidePass] = useState(true);
   const dispatch = useDispatch();
+  const loged = useSelector(state => state.user.loged)
+  
 
   const emailRegex = /\S+@\S+\.\S+/;
   const usernameRegex = /^\S*$/;
   
-  const registration = ({navigation}) => {
+  const registration = () => {
     emailRegex.test(email) && usernameRegex.test(username) && username.length > 3 && password.length >= 6 &&  
     fetch('http://10.0.2.2:8080/api/auth/signup', {
       method: 'POST',
@@ -31,7 +34,12 @@ const SignUp = ({navigation}) => {
       })
     })
     .then((response) => response.json()) 
-    .then((response) => Cookies.set("token", response.token) && dispatch(logIn()) && navigation.navigate('Home'))
+    .then((response) => {  
+        response.token &&
+        Cookies.set("token", response.token) 
+        dispatch(logIn()) 
+        navigation.navigate('Instagram')
+    })
     .catch((error) => console.log(error))
   }
 
