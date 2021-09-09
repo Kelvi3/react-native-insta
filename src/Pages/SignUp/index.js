@@ -18,10 +18,13 @@ const SignUp = ({navigation}) => {
 
   const emailRegex = /\S+@\S+\.\S+/;
   const usernameRegex = /^\S*$/;
-  
+
+  // http://localhost:3000/users
+  // http://10.0.2.2:8080/api/auth/signup
+
   const registration = () => {
     emailRegex.test(email) && usernameRegex.test(username) && username.length > 3 && password.length >= 6 &&  
-    fetch('http://10.0.2.2:8080/api/auth/signup', {
+    fetch('http://10.0.2.2:3000/users', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
