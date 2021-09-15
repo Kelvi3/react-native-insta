@@ -33,6 +33,7 @@ const BottomTab = () => {
           tabBarLabel: ""
         }} component={Search}/>
         <Tab.Screen name="Picture" options={{
+           headerShown: false,
           tabBarIcon: ({ color }) => (
             <MaterialCommunityIcons name="camera" color={color} size={30} style={{marginTop: "20%"}} />
           ),
