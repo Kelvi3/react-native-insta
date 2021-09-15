@@ -1,16 +1,22 @@
 import React, {useState, useEffect, useRef } from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-// import Photo from '../../Component/Photo';
 import Publish from '../../Component/Publish';
 import { Camera } from 'expo-camera';
 
-export default function Picture() {
+import CancelButton from "../../Component/CancelButton"
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+
+const Photo = ({navigation}) => {
   const [selectedImage, setSelectedImage] = React.useState(null);
   const [hasPermission, setHasPermission] = useState(null);
   const [type, setType] = useState(Camera.Constants.Type.back);
   const [image, setImage] = React.useState(null)
   const ref = useRef(null)
+
 
   useEffect(() => {
     (async () => {
@@ -20,8 +26,14 @@ export default function Picture() {
   }, []);
   
   const _takePhoto = async () => {
-    const photo = await ref.current.takePictureAsync()
-    setImage(photo.uri)
+    try {
+      const takePic = await ref.current.takePictureAsync()
+      const photo = takePic.uri
+      await AsyncStorage.setItem('pic', JSON.stringify(photo))
+      navigation.navigate("Publish")
+    }catch (e) {
+      console.log(e)
+    }
   }
 
   let openImagePickerAsync = async () => {
@@ -33,26 +45,32 @@ export default function Picture() {
     }
 
     let pickerResult = await ImagePicker.launchImageLibraryAsync();
-
+    let pic = pickerResult.uri
     if (pickerResult.cancelled === true) {
       return;
+    }
+    try {
+      await AsyncStorage.setItem('pic', JSON.stringify(pic))
+      navigation.navigate("Publish")
+    }catch (e) {
+      console.log(e)
     }
     setSelectedImage({ localUri: pickerResult.uri });
   };
 
-  if (image !== null || selectedImage !== null) {
-    return (
-      <>
-      <View>
-        {image === null ? 
-          <Publish image={selectedImage.localUri} btn={() => setSelectedImage(null)}/>
-        :
-          <Publish image={image} btn={() => setImage(null)}/>
-        }
-      </View>
-      </>
-    );
-  }
+  // if (image !== null || selectedImage !== null) {
+  //   return (
+  //     <>
+  //     <View>
+  //       {image === null ? 
+  //         <Publish image={selectedImage.localUri} btn={() => setSelectedImage(null)}/>
+  //       :
+  //         <Publish image={image} btn={() => setImage(null)}/>
+  //       }
+  //     </View>
+  //     </>
+  //   );
+  // }
 
   if (hasPermission === null) {
     return <View />;
@@ -92,7 +110,6 @@ export default function Picture() {
         style={{width: 60, height: 60, alignSelf: "center", marginTop: 10 }} />
       </TouchableOpacity>
     </View>
-    {/* <Photo/> */}
     <View style={styles.container}>
       <Image source={{ uri: 'https://i.imgur.com/TkIrScD.png' }} style={styles.logo} />
       <TouchableOpacity onPress={openImagePickerAsync} style={styles.button}>
@@ -123,3 +140,22 @@ const styles = StyleSheet.create({
 });
 
 
+const Stack = createNativeStackNavigator();
+
+const Picture = ({navigation}) => {
+
+
+    return (
+      <Stack.Navigator>
+          <Stack.Screen name="Photo" component={Photo}/>  
+        <Stack.Group  screenOptions={() => ({
+      headerLeft: () =>  <TouchableOpacity onPress={() => navigation.navigate("Photo")}><CancelButton  /></TouchableOpacity>,
+    })}>
+          <Stack.Screen name="Publish" options={{title: ""}} component={Publish} />
+        </Stack.Group>
+      </Stack.Navigator> 
+    )
+}
+
+
+export default Picture
